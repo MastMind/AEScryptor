@@ -21,7 +21,6 @@
 
 
 using namespace CryptoPP;
-using namespace std;
 
 
 static char key[MAX_KEY_SIZE];
@@ -38,15 +37,15 @@ static bool file_mode_flag = false;
 
 static int parse_options(int argc, char** argv);
 static void print_help(char* progname);
-static void encrypt_aes_cbc(string key, string iv, string& src_msg, string& enc_msg);
-static void decrypt_aes_cbc(string key, string iv, string& src_msg, string& dec_msg);
-static void encrypt_aes_ctr(string key, string iv, string& src_msg, string& enc_msg);
-static void decrypt_aes_ctr(string key, string iv, string& src_msg, string& dec_msg);
+static void encrypt_aes_cbc(std::string key, std::string iv, std::string& src_msg, std::string& enc_msg);
+static void decrypt_aes_cbc(std::string key, std::string iv, std::string& src_msg, std::string& dec_msg);
+static void encrypt_aes_ctr(std::string key, std::string iv, std::string& src_msg, std::string& enc_msg);
+static void decrypt_aes_ctr(std::string key, std::string iv, std::string& src_msg, std::string& dec_msg);
 
-static void encrypt_file_aes_cbc(string key, string iv, string& src_file, string& enc_file);
-static void decrypt_file_aes_cbc(string key, string iv, string& src_file, string& dec_file);
-static void encrypt_file_aes_ctr(string key, string iv, string& src_file, string& enc_file);
-static void decrypt_file_aes_ctr(string key, string iv, string& src_file, string& dec_file);
+static void encrypt_file_aes_cbc(std::string key, std::string iv, std::string& src_file, std::string& enc_file);
+static void decrypt_file_aes_cbc(std::string key, std::string iv, std::string& src_file, std::string& dec_file);
+static void encrypt_file_aes_ctr(std::string key, std::string iv, std::string& src_file, std::string& enc_file);
+static void decrypt_file_aes_ctr(std::string key, std::string iv, std::string& src_file, std::string& dec_file);
 
 static std::string string_to_hex(const std::string& input);
 static std::string hex_to_string(const std::string& input);
@@ -71,14 +70,14 @@ int main(int argc, char** argv) {
         return 2;
     }
 
-    string src_msg(msg);
-    string out_msg;
-    string key_str(key);
-    string iv_str(iv);
+    std::string src_msg(msg);
+    std::string out_msg;
+    std::string key_str(key);
+    std::string iv_str(iv);
     ciphermode_table* c_mode = search_cipher(cipher_mode);
 
     if (!c_mode || c_mode->mode == UNKNOWN) {
-        cout << "Bad cipher mode. See --help for details" << endl;
+        std::cout << "Bad cipher mode. See --help for details" << std::endl;
         return 3;
     }
 
@@ -94,17 +93,17 @@ int main(int argc, char** argv) {
 
     if (strlen(input_filename) || strlen(output_filename)) {
         if (strlen(msg)) {
-            cout << "In file mode message option is forbidden" << endl;
+            std::cout << "In file mode message option is forbidden" << std::endl;
             return 4;
         }
 
         if (!strlen(input_filename)) {
-            cout << "No input file" << endl;
+            std::cout << "No input file" << std::endl;
             return 5;
         }
 
         if (!strlen(output_filename)) {
-            cout << "No output file" << endl;
+            std::cout << "No output file" << std::endl;
             return 6;
         }
 
@@ -112,7 +111,7 @@ int main(int argc, char** argv) {
     }
 
     if (!strlen(msg) && !file_mode_flag) {
-        cout << "No message!" << endl;
+        std::cout << "No message!" << std::endl;
         return 9;
     }
 
@@ -121,14 +120,14 @@ int main(int argc, char** argv) {
             if (!file_mode_flag) {
                 c_mode->encrypt_msg_func(key_str, iv_str, src_msg, out_msg);
                 if (hex_output_flag) {
-                    cout << string_to_hex(out_msg);
+                    std::cout << string_to_hex(out_msg);
                     break;
                 }
 
-                cout << out_msg << endl;
+                std::cout << out_msg << std::endl;
             } else {
-                string i_file(input_filename);
-                string o_file(output_filename);
+                std::string i_file(input_filename);
+                std::string o_file(output_filename);
 
                 c_mode->encrypt_file_func(key_str, iv_str, i_file, o_file);
             }
@@ -138,14 +137,14 @@ int main(int argc, char** argv) {
             if (!file_mode_flag) {
                 c_mode->decrypt_msg_func(key_str, iv_str, src_msg, out_msg);
                 if (hex_output_flag) {
-                    cout << string_to_hex(out_msg);
+                    std::cout << string_to_hex(out_msg);
                     break;
                 }
 
-                cout << out_msg << endl;
+                std::cout << out_msg << std::endl;
             } else {
-                string i_file(input_filename);
-                string o_file(output_filename);
+                std::string i_file(input_filename);
+                std::string o_file(output_filename);
 
                 c_mode->decrypt_file_func(key_str, iv_str, i_file, o_file);
             }
@@ -274,23 +273,23 @@ static int parse_options(int argc, char** argv) {
 }
 
 static void print_help(char* progname) {
-    cout << "Usage: " << std::string(progname) << " <options>" << endl;
-    cout << "Options:" << endl;
-    cout << "         " << "--key -k - set key for encryption/decryption" << endl;
-    cout << "         " << "--message -m - set message for encryption/decryption" << endl;
-    cout << "         " << "--encrypt -e - encrypt message" << endl;
-    cout << "         " << "--decrypt -d - decrypt message" << endl;
-    cout << "         " << "--input-file i - set to file mode and set input file" << endl;
-    cout << "         " << "--output-file o - set to file mode and set output file" << endl;
-    cout << endl;
-    cout << "         " << "--hex-input - turn on hex mode for input message" << endl;
-    cout << "         " << "--hex-output - turn on hex mode for output message" << endl;
-    cout << "         " << "--hex-key - turn on hex mode for key" << endl;
-    cout << "         " << "--init-vector - set up init vector (only in hex mode)" << endl;
-    cout << "         " << "--mode - choose cipher mode. Supported: CBC (default), CTR" << endl;
+    std::cout << "Usage: " << std::string(progname) << " <options>" << std::endl;
+    std::cout << "Options:" << std::endl;
+    std::cout << "         " << "--key -k - set key for encryption/decryption" << std::endl;
+    std::cout << "         " << "--message -m - set message for encryption/decryption" << std::endl;
+    std::cout << "         " << "--encrypt -e - encrypt message" << std::endl;
+    std::cout << "         " << "--decrypt -d - decrypt message" << std::endl;
+    std::cout << "         " << "--input-file i - set to file mode and set input file" << std::endl;
+    std::cout << "         " << "--output-file o - set to file mode and set output file" << std::endl;
+    std::cout << std::endl;
+    std::cout << "         " << "--hex-input - turn on hex mode for input message" << std::endl;
+    std::cout << "         " << "--hex-output - turn on hex mode for output message" << std::endl;
+    std::cout << "         " << "--hex-key - turn on hex mode for key" << std::endl;
+    std::cout << "         " << "--init-vector - set up init vector (only in hex mode)" << std::endl;
+    std::cout << "         " << "--mode - choose cipher mode. Supported: CBC (default), CTR" << std::endl;
 }
 
-static void encrypt_aes_cbc(string key, string iv, string& src_msg, string& enc_msg) {
+static void encrypt_aes_cbc(std::string key, std::string iv, std::string& src_msg, std::string& enc_msg) {
     CryptoPP::byte crypto_key[CryptoPP::AES::DEFAULT_KEYLENGTH];
     CryptoPP::byte crypto_iv[CryptoPP::AES::BLOCKSIZE];
 
@@ -312,7 +311,7 @@ static void encrypt_aes_cbc(string key, string iv, string& src_msg, string& enc_
         ); // StringSource
 }
 
-static void decrypt_aes_cbc(string key, string iv, string& src_msg, string& dec_msg) {
+static void decrypt_aes_cbc(std::string key, std::string iv, std::string& src_msg, std::string& dec_msg) {
     CryptoPP::byte crypto_key[CryptoPP::AES::DEFAULT_KEYLENGTH];
     CryptoPP::byte crypto_iv[CryptoPP::AES::BLOCKSIZE];
 
@@ -334,7 +333,7 @@ static void decrypt_aes_cbc(string key, string iv, string& src_msg, string& dec_
         ); // StringSource
 }
 
-static void encrypt_aes_ctr(string key, string iv, string& src_msg, string& enc_msg) {
+static void encrypt_aes_ctr(std::string key, std::string iv, std::string& src_msg, std::string& enc_msg) {
     CryptoPP::byte crypto_key[CryptoPP::AES::DEFAULT_KEYLENGTH];
     CryptoPP::byte crypto_iv[CryptoPP::AES::BLOCKSIZE];
 
@@ -356,7 +355,7 @@ static void encrypt_aes_ctr(string key, string iv, string& src_msg, string& enc_
         ); // StringSource
 }
 
-static void decrypt_aes_ctr(string key, string iv, string& src_msg, string& dec_msg) {
+static void decrypt_aes_ctr(std::string key, std::string iv, std::string& src_msg, std::string& dec_msg) {
     CryptoPP::byte crypto_key[CryptoPP::AES::DEFAULT_KEYLENGTH];
     CryptoPP::byte crypto_iv[CryptoPP::AES::BLOCKSIZE];
 
@@ -378,21 +377,21 @@ static void decrypt_aes_ctr(string key, string iv, string& src_msg, string& dec_
         ); // StringSource
 }
 
-static void encrypt_file_aes_cbc(string key, string iv, string& src_file, string& enc_file) {
-    ifstream ifile;
-    ofstream ofile;
+static void encrypt_file_aes_cbc(std::string key, std::string iv, std::string& src_file, std::string& enc_file) {
+    std::ifstream ifile;
+    std::ofstream ofile;
 
-    ifile.open(src_file, ios_base::binary);
+    ifile.open(src_file, std::ios_base::binary);
 
     if (!ifile.is_open()) {
-        cout << "Can't open input file " << string(input_filename) << endl;
+        std::cout << "Can't open input file " << std::string(input_filename) << std::endl;
         return;
     }
 
-    ofile.open(enc_file, ios_base::binary);
+    ofile.open(enc_file, std::ios_base::binary);
 
     if (!ofile.is_open()) {
-        cout << "Can't write to " << string(output_filename) << endl;
+        std::cout << "Can't write to " << std::string(output_filename) << std::endl;
         return;
     }
 
@@ -420,21 +419,21 @@ static void encrypt_file_aes_cbc(string key, string iv, string& src_file, string
     ofile.close();
 }
 
-static void decrypt_file_aes_cbc(string key, string iv, string& src_file, string& dec_file) {
-    ifstream ifile;
-    ofstream ofile;
+static void decrypt_file_aes_cbc(std::string key, std::string iv, std::string& src_file, std::string& dec_file) {
+    std::ifstream ifile;
+    std::ofstream ofile;
 
-    ifile.open(src_file, ios_base::binary);
+    ifile.open(src_file, std::ios_base::binary);
 
     if (!ifile.is_open()) {
-        cout << "Can't open input file " << string(input_filename) << endl;
+        std::cout << "Can't open input file " << std::string(input_filename) << std::endl;
         return;
     }
 
-    ofile.open(dec_file, ios_base::binary);
+    ofile.open(dec_file, std::ios_base::binary);
 
     if (!ofile.is_open()) {
-        cout << "Can't write to " << string(output_filename) << endl;
+        std::cout << "Can't write to " << std::string(output_filename) << std::endl;
         return;
     }
 
@@ -462,21 +461,21 @@ static void decrypt_file_aes_cbc(string key, string iv, string& src_file, string
     ofile.close();
 }
 
-static void encrypt_file_aes_ctr(string key, string iv, string& src_file, string& enc_file) {
-    ifstream ifile;
-    ofstream ofile;
+static void encrypt_file_aes_ctr(std::string key, std::string iv, std::string& src_file, std::string& enc_file) {
+    std::ifstream ifile;
+    std::ofstream ofile;
 
-    ifile.open(src_file, ios_base::binary);
+    ifile.open(src_file, std::ios_base::binary);
 
     if (!ifile.is_open()) {
-        cout << "Can't open input file " << string(input_filename) << endl;
+        std::cout << "Can't open input file " << std::string(input_filename) << std::endl;
         return;
     }
 
-    ofile.open(enc_file, ios_base::binary);
+    ofile.open(enc_file, std::ios_base::binary);
 
     if (!ofile.is_open()) {
-        cout << "Can't write to " << string(output_filename) << endl;
+        std::cout << "Can't write to " << std::string(output_filename) << std::endl;
         return;
     }
 
@@ -504,21 +503,21 @@ static void encrypt_file_aes_ctr(string key, string iv, string& src_file, string
     ofile.close();
 }
 
-static void decrypt_file_aes_ctr(string key, string iv, string& src_file, string& dec_file) {
-    ifstream ifile;
-    ofstream ofile;
+static void decrypt_file_aes_ctr(std::string key, std::string iv, std::string& src_file, std::string& dec_file) {
+    std::ifstream ifile;
+    std::ofstream ofile;
 
-    ifile.open(src_file, ios_base::binary);
+    ifile.open(src_file, std::ios_base::binary);
 
     if (!ifile.is_open()) {
-        cout << "Can't open input file " << string(input_filename) << endl;
+        std::cout << "Can't open input file " << std::string(input_filename) << std::endl;
         return;
     }
 
-    ofile.open(dec_file, ios_base::binary);
+    ofile.open(dec_file, std::ios_base::binary);
 
     if (!ofile.is_open()) {
-        cout << "Can't write to " << string(output_filename) << endl;
+        std::cout << "Can't write to " << std::string(output_filename) << std::endl;
         return;
     }
 
